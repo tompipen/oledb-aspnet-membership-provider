@@ -284,8 +284,8 @@ namespace Binarywater.NET.ASP.Providers
 
             OleDbConnection conn = new OleDbConnection(connectionString);
             OleDbCommand cmd = new OleDbCommand("UPDATE [" + tableName + "]" +
-                    " SET Password = ?, LastPasswordChangedDate = ? " +
-                    " WHERE Username = ? AND ApplicationName = ?", conn);
+                    " SET [Password] = ?, LastPasswordChangedDate = ? " +
+                    " WHERE [UserName] = ? AND ApplicationName = ?", conn);
 
             cmd.Parameters.Add("@Password", OleDbType.VarChar, 255).Value = EncodePassword(newPwd);
             cmd.Parameters.Add("@LastPasswordChangedDate", OleDbType.Date).Value = DateTime.Now;
@@ -344,7 +344,7 @@ namespace Binarywater.NET.ASP.Providers
             OleDbConnection conn = new OleDbConnection(connectionString);
             OleDbCommand cmd = new OleDbCommand("UPDATE [" + tableName + "]" +
                     " SET PasswordQuestion = ?, PasswordAnswer = ?" +
-                    " WHERE Username = ? AND ApplicationName = ?", conn);
+                    " WHERE [UserName] = ? AND ApplicationName = ?", conn);
 
             cmd.Parameters.Add("@Question", OleDbType.VarChar, 255).Value = newPwdQuestion;
             cmd.Parameters.Add("@Answer", OleDbType.VarChar, 255).Value = EncodePassword(newPwdAnswer);
@@ -458,7 +458,7 @@ namespace Binarywater.NET.ASP.Providers
                 cmd.Parameters.Add("@Username", OleDbType.VarChar, 255).Value = username;
                 cmd.Parameters.Add("@Password", OleDbType.VarChar).Value = EncodePassword(password);
                 cmd.Parameters.Add("@Email", OleDbType.VarChar, 128).Value = email;
-                cmd.Parameters.Add("@PasswordQuestion", OleDbType.VarChar, 255).Value = passwordQuestion;
+                cmd.Parameters.Add("@PasswordQuestion", OleDbType.VarChar, 255).Value = string.IsNullOrEmpty(passwordQuestion) ? string.Empty : passwordQuestion;
                 cmd.Parameters.Add("@PasswordAnswer", OleDbType.VarChar, 255).Value = EncodePassword(passwordAnswer);
                 cmd.Parameters.Add("@IsApproved", OleDbType.Boolean).Value = isApproved;
                 cmd.Parameters.Add("@Comment", OleDbType.VarChar, 255).Value = "";
@@ -1131,8 +1131,8 @@ namespace Binarywater.NET.ASP.Providers
                 }
 
                 OleDbCommand updateCmd = new OleDbCommand("UPDATE [" + tableName + "]" +
-                    " SET Password = ?, LastPasswordChangedDate = ?" +
-                    " WHERE Username = ? AND ApplicationName = ? AND IsLockedOut = False", conn);
+                    " SET [Password] = ?, [LastPasswordChangedDate] = ?" +
+                    " WHERE [UserName] = ? AND [ApplicationName] = ? AND [IsLockedOut] = False", conn);
 
                 updateCmd.Parameters.Add("@Password", OleDbType.VarChar, 255).Value = EncodePassword(newPassword);
                 updateCmd.Parameters.Add("@LastPasswordChangedDate", OleDbType.Date).Value = DateTime.Now;
@@ -1489,6 +1489,11 @@ namespace Binarywater.NET.ASP.Providers
 
         private string EncodePassword(string password)
         {
+            if (string.IsNullOrEmpty(password))
+            {
+                return string.Empty;
+            }
+
             string encodedPassword = password;
 
             switch (PasswordFormat)
